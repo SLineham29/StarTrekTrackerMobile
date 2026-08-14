@@ -58,7 +58,8 @@ import io.github.slineham.startrektrackermobile.viewmodel.TrackerViewModel
 fun EpisodeDetailsScreen(
     viewModel: TrackerViewModel = viewModel(),
     seasonNum: Int,
-    seriesId: Int
+    seriesId: Int,
+    episodeNum: Int
 ) {
 
     val chosenSeries by viewModel.chosenSeries.collectAsState()
@@ -67,7 +68,7 @@ fun EpisodeDetailsScreen(
 
     val chosenEpisode by viewModel.chosenEpisodeDetails.collectAsState()
 
-    var episodeNum by remember { mutableIntStateOf(1) }
+    var episodeNum by remember { mutableIntStateOf(episodeNum) }
 
     var currentSeason by remember {mutableIntStateOf(seasonNum)}
 

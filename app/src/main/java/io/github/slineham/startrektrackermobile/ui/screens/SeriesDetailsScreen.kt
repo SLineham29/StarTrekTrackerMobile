@@ -273,7 +273,7 @@ fun SeriesDetailsScreen(
                             seasonNum,
                             onSeasonSelected = {newSeasonNum -> seasonNum = newSeasonNum})
                         Button(
-                            onClick = { navController.navigate("seriesDetails/${seriesId}/$seasonNum") },
+                            onClick = { navController.navigate("seriesDetails/${seriesId}/$seasonNum/1") },
                             colors = ButtonDefaults.buttonColors(containerColor = LcarsColours.Orange),
                             shape = RoundedCornerShape(8.dp)
                         ) {

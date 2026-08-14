@@ -2,6 +2,7 @@ package io.github.slineham.startrektrackermobile.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,13 +13,18 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -35,13 +41,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import io.github.slineham.startrektrackermobile.ui.theme.AntonioFontFamily
 import io.github.slineham.startrektrackermobile.ui.theme.LcarsColours
 import io.github.slineham.startrektrackermobile.viewmodel.TrackerViewModel
 
 @Composable
-fun EpisodesWatchedScreen(viewModel: TrackerViewModel = viewModel(), seriesId: Int) {
+fun EpisodesWatchedScreen(
+    viewModel: TrackerViewModel = viewModel(),
+    navController: NavController,
+    seriesId: Int) {
 
     val chosenSeries by viewModel.chosenSeries.collectAsStateWithLifecycle()
 
@@ -103,7 +113,6 @@ fun EpisodesWatchedScreen(viewModel: TrackerViewModel = viewModel(), seriesId: I
                     .fillMaxSize()
                     .border(1.dp, LcarsColours.LightBlue.copy(alpha = 0.5f), RoundedCornerShape(16.dp))
                     .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 10.dp)
             ) {
                 (1..numOfSeasons).forEach { season ->
                     Card(
@@ -143,15 +152,29 @@ fun EpisodesWatchedScreen(viewModel: TrackerViewModel = viewModel(), seriesId: I
                         }
 
                         (seasonEpisodesList[season])?.forEach { episode ->
-                            Text(
-                                text = "Episode ${episode.details.episodeNumber} - ${episode.details.name}",
-                                fontFamily = AntonioFontFamily,
-                                fontWeight = FontWeight.Normal,
-                                fontSize = 14.sp,
-                                color = LcarsColours.TextSecondary,
-                                lineHeight = 20.sp,
-                                modifier = Modifier.padding(vertical = 10.dp, horizontal = 12.dp)
-                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 10.dp, horizontal = 12.dp)
+                                    .clickable { navController.navigate("seriesDetails/${seriesId}/${season}/${episode.details.episodeNumber}")}
+                            ) {
+                                Text(
+                                    text = "Episode ${episode.details.episodeNumber} - ${episode.details.name}",
+                                    fontFamily = AntonioFontFamily,
+                                    fontWeight = FontWeight.Normal,
+                                    fontSize = 14.sp,
+                                    color = LcarsColours.TextSecondary,
+                                    lineHeight = 20.sp,
+                                )
+                                Spacer(modifier = Modifier.width(5.dp))
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                                    contentDescription = "Go to episode",
+                                    tint = LcarsColours.Violet,
+                                    modifier = Modifier.size(14.dp)
+                                )
+                            }
                             HorizontalDivider(color = Color(0xFF222222))
                         }
                     }

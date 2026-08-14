@@ -52,23 +52,28 @@ fun Navigator() {
 
             EpisodesWatchedScreen(
                 viewModel = viewModel,
+                navController = navController,
                 seriesId = id
             )
     }
         composable(
-            route = "seriesDetails/{seriesId}/{seasonNum}",
+            route = "seriesDetails/{seriesId}/{seasonNum}/{episodeNum}",
             arguments =
-                listOf(navArgument("seriesId") { type = NavType.IntType },
-                    navArgument("seasonNum") { type = NavType.IntType })
+                listOf(
+                    navArgument("seriesId") { type = NavType.IntType },
+                    navArgument("seasonNum") { type = NavType.IntType },
+                    navArgument("episodeNum") { type = NavType.IntType})
         ) { backStackEntry ->
 
             val id = backStackEntry.arguments?.getInt("seriesId") ?: 0
-            val seasonNumber = backStackEntry.arguments?.getInt("seasonNum") ?:1
+            val seasonNumber = backStackEntry.arguments?.getInt("seasonNum") ?: 1
+            val episodeNumber = backStackEntry.arguments?.getInt("episodeNum") ?: 1
 
             EpisodeDetailsScreen(
                 viewModel = viewModel,
                 seasonNum = seasonNumber,
-                seriesId = id
+                seriesId = id,
+                episodeNum = episodeNumber
             )
         }
     }
