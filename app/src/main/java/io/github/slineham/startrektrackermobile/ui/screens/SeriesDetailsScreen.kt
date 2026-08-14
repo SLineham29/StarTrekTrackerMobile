@@ -2,6 +2,7 @@ package io.github.slineham.startrektrackermobile.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,6 +21,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -140,7 +142,7 @@ fun SeriesDetailsScreen(
                 horizontalArrangement = Arrangement.Center,
                 modifier = Modifier
                     .background(
-                        color = Color(0xFF111111), // Dark contrast card background
+                        color = Color(0xFF111111),
                         shape = RoundedCornerShape(12.dp)
                     )
                     .border(
@@ -149,6 +151,7 @@ fun SeriesDetailsScreen(
                         shape = RoundedCornerShape(12.dp)
                     )
                     .padding(horizontal = 16.dp, vertical = 8.dp)
+                    .clickable { navController.navigate("seriesDetails/${seriesId}/watched")}
             ) {
                 Text(
                     text = "PROGRESS // ",
@@ -164,6 +167,13 @@ fun SeriesDetailsScreen(
                     fontWeight = FontWeight.Normal,
                     fontSize = 13.sp,
                     color = LcarsColours.TextPrimary
+                )
+                Spacer(modifier = Modifier.width(5.dp))
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                    contentDescription = "View watched episodes",
+                    tint = LcarsColours.LightBlue,
+                    modifier = Modifier.size(13.dp)
                 )
             }
 
@@ -229,10 +239,9 @@ fun SeriesDetailsScreen(
                 colors = CardDefaults.cardColors(containerColor = Color(0xFF111111)),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .border(1.dp, LcarsColours.LightBlue, RoundedCornerShape(16.dp))
+                    .border(1.dp, LcarsColours.LightBlue.copy(alpha = 0.5f), RoundedCornerShape(16.dp))
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-
+                Column() {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -253,7 +262,9 @@ fun SeriesDetailsScreen(
                     }
 
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -275,37 +286,39 @@ fun SeriesDetailsScreen(
                         }
                     }
 
-                    HorizontalDivider(color = Color(0xFF222222))
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Column(modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)) {
+                        HorizontalDivider(color = Color(0xFF222222))
+                        Spacer(modifier = Modifier.height(12.dp))
 
-                    Text(
-                        text = "SEASON $seasonNum OVERVIEW //",
-                        fontFamily = AntonioFontFamily,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 15.sp,
-                        color = LcarsColours.Violet,
-                        letterSpacing = 1.sp
-                    )
-                    Spacer(modifier = Modifier.height(6.dp))
-                    if(chosenSeason?.overview.isNullOrEmpty()) {
                         Text(
-                            text = "NO OVERVIEW AVAILABLE",
-                            textAlign = TextAlign.Center,
+                            text = "SEASON $seasonNum OVERVIEW //",
                             fontFamily = AntonioFontFamily,
-                            fontWeight = FontWeight.Light,
-                            fontSize = 14.sp,
-                            color = LcarsColours.TextSecondary,
-                            lineHeight = 20.sp
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 15.sp,
+                            color = LcarsColours.Violet,
+                            letterSpacing = 1.sp
                         )
-                    } else {
-                        Text(
-                            text = chosenSeason?.overview ?: "NO OVERVIEW AVAILABLE.",
-                            fontFamily = AntonioFontFamily,
-                            fontWeight = FontWeight.Light,
-                            fontSize = 14.sp,
-                            color = LcarsColours.TextSecondary,
-                            lineHeight = 20.sp
-                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+                        if(chosenSeason?.overview.isNullOrEmpty()) {
+                            Text(
+                                text = "NO OVERVIEW AVAILABLE",
+                                textAlign = TextAlign.Center,
+                                fontFamily = AntonioFontFamily,
+                                fontWeight = FontWeight.Light,
+                                fontSize = 14.sp,
+                                color = LcarsColours.TextSecondary,
+                                lineHeight = 20.sp
+                            )
+                        } else {
+                            Text(
+                                text = chosenSeason?.overview ?: "NO OVERVIEW AVAILABLE.",
+                                fontFamily = AntonioFontFamily,
+                                fontWeight = FontWeight.Light,
+                                fontSize = 14.sp,
+                                color = LcarsColours.TextSecondary,
+                                lineHeight = 20.sp
+                            )
+                        }
                     }
                 }
             }

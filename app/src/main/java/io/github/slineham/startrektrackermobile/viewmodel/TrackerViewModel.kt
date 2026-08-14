@@ -21,11 +21,9 @@ import javax.inject.Inject
 @HiltViewModel
 class TrackerViewModel @Inject constructor(private val appRepository: AppRepository) : ViewModel() {
 
-    private val api = TmdbApi().service;
+    private val api = TmdbApi().service
 
     var series = MutableStateFlow<List<Series>>(emptyList())
-
-    var cachedSeasons = MutableStateFlow<Map<Pair<Int, Int>, SeasonDetails>>(emptyMap())
 
     private val _chosenSeries = MutableStateFlow<Series?>(null)
     val chosenSeries: StateFlow<Series?> = _chosenSeries.asStateFlow()
@@ -35,6 +33,9 @@ class TrackerViewModel @Inject constructor(private val appRepository: AppReposit
 
     private val _chosenEpisodeDetails = MutableStateFlow<Episodes?>(null)
     val chosenEpisodeDetails: StateFlow<Episodes?> = _chosenEpisodeDetails.asStateFlow()
+
+    private val _seriesWatchedEpisodes = MutableStateFlow<List<Episodes>>(emptyList())
+    val seriesWatchedEpisodes: StateFlow<List<Episodes>> = _seriesWatchedEpisodes.asStateFlow()
 
     init {
         getSeries()
@@ -119,8 +120,10 @@ class TrackerViewModel @Inject constructor(private val appRepository: AppReposit
         }
     }
 
-    fun getNumOfSeasons(seriesId: Int): Int {
-        val series = series.value.find {it.seriesId == seriesId}
-        return series?.details?.numberOfSeasons ?: 1
+    fun getSeriesWatchedEpisodes(seriesId: Int) {
+        viewModelScope.launch {
+            val watchedEpisodes = appRepository.getWatchedEpisodes(seriesId)
+            _seriesWatchedEpisodes.value = watchedEpisodes
+        }
     }
 }

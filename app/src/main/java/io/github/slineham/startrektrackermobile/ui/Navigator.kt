@@ -8,6 +8,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import io.github.slineham.startrektrackermobile.ui.screens.EpisodeDetailsScreen
+import io.github.slineham.startrektrackermobile.ui.screens.EpisodesWatchedScreen
 import io.github.slineham.startrektrackermobile.ui.screens.MainMenuScreen
 import io.github.slineham.startrektrackermobile.ui.screens.SeriesDetailsScreen
 import io.github.slineham.startrektrackermobile.viewmodel.TrackerViewModel
@@ -42,6 +43,18 @@ fun Navigator() {
                 seriesId = id
             )
         }
+        composable(
+            route = "seriesDetails/{seriesId}/watched",
+            arguments = listOf(navArgument("seriesId") { type = NavType.IntType })
+        ) { backStackEntry ->
+
+        val id = backStackEntry.arguments?.getInt("seriesId") ?: 0
+
+            EpisodesWatchedScreen(
+                viewModel = viewModel,
+                seriesId = id
+            )
+    }
         composable(
             route = "seriesDetails/{seriesId}/{seasonNum}",
             arguments =

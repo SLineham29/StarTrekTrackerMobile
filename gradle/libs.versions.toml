@@ -18,6 +18,7 @@ navigationCompose = "2.9.8"
 retrofit = "3.0.0"
 room3Compiler = "3.0.1"
 room3Runtime = "3.0.1"
+material3 = "1.4.0"
 
 [libraries]
 androidx-compose-material-icons-core = { module = "androidx.compose.material:material-icons-core" }
@@ -47,6 +48,7 @@ coil-compose = { module = "io.coil-kt.coil3:coil-compose", name = "coil-compose"
 coil-network-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", name="coil-network-okhttp", version.ref = "coil" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json" }
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
+androidx-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

@@ -19,4 +19,7 @@ interface EpisodesDao {
 
     @Query("UPDATE episodes SET hasWatched = :watchedStatus WHERE combinedId = :id")
     suspend fun updateEpisodeWatchedStatus(id: String, watchedStatus: Boolean)
+
+    @Query("SELECT * FROM episodes WHERE seriesId = :seriesId AND hasWatched = TRUE")
+    suspend fun getAllWatchedEpisodes(seriesId: Int): List<Episodes>
 }

@@ -57,4 +57,9 @@ class AppRepository @Inject constructor(
             seriesDao.decreaseTotalEpisodesWatched(extractedId)
         }
     }
+
+    suspend fun getWatchedEpisodes(seriesId: Int): List<Episodes> {
+        val watchedEpisodes = episodesDao.getAllWatchedEpisodes(seriesId)
+        return watchedEpisodes
+    }
 }
