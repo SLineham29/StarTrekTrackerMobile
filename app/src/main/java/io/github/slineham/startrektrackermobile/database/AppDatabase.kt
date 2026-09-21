@@ -4,7 +4,7 @@ import androidx.room3.Database
 import androidx.room3.RoomDatabase
 import androidx.room3.ColumnTypeConverters
 
-@Database(entities = [Series::class, Seasons::class, Episodes::class],version = 1)
+@Database(entities = [Series::class, Seasons::class, Episodes::class],version = 2)
 @ColumnTypeConverters(ClassConverters::class)
 abstract class AppDatabase: RoomDatabase() {
 

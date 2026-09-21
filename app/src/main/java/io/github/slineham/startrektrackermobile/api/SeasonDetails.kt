@@ -2,6 +2,7 @@ package io.github.slineham.startrektrackermobile.api
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 
 @Serializable
 data class SeasonDetails(
@@ -18,7 +19,11 @@ data class EpisodeDetails(
     val airDate: String = "",
     @SerialName("episode_number")
     val episodeNumber: Int = 0,
+    @Transient
+    var productionEpisodeNumber: Int = 0,
     val name: String = "",
+    @Transient
+    var stardate: Double? = null,
     val overview: String = "",
     val runtime: Int = 0,
     @SerialName("still_path")

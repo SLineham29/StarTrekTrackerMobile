@@ -46,6 +46,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import io.github.slineham.startrektrackermobile.ui.components.EpisodeGuestStars
 import io.github.slineham.startrektrackermobile.ui.components.EpisodeSelector
@@ -56,10 +57,11 @@ import io.github.slineham.startrektrackermobile.viewmodel.TrackerViewModel
 
 @Composable
 fun EpisodeDetailsScreen(
+    navController: NavController,
     viewModel: TrackerViewModel = viewModel(),
     seasonNum: Int,
     seriesId: Int,
-    episodeNum: Int
+    episodeNum: Int,
 ) {
 
     val chosenSeries by viewModel.chosenSeries.collectAsState()
@@ -68,16 +70,27 @@ fun EpisodeDetailsScreen(
 
     val chosenEpisode by viewModel.chosenEpisodeDetails.collectAsState()
 
+    val episodeNameList by viewModel.episodeNameList.collectAsState()
+
     var episodeNum by remember { mutableIntStateOf(episodeNum) }
 
     var currentSeason by remember {mutableIntStateOf(seasonNum)}
 
+    val inProductionOrder = navController.previousBackStackEntry
+        ?.savedStateHandle
+        ?.get<Boolean>("inProductionOrder") ?: false
+
     LaunchedEffect(episodeNum, chosenSeason) {
-        viewModel.getChosenEpisode(seriesId, chosenSeason?.seasonNum ?: 1, episodeNum)
+        if(inProductionOrder) {
+            viewModel.getChosenProductionOrderEpisode(seriesId, chosenSeason?.seasonNum ?: 1, episodeNum)
+        } else {
+            viewModel.getChosenEpisode(seriesId, chosenSeason?.seasonNum ?: 1, episodeNum)
+        }
     }
 
     LaunchedEffect(seriesId, currentSeason) {
         viewModel.getChosenSeriesSeason(seriesId, currentSeason)
+        viewModel.getSeasonEpisodeNames(seriesId, currentSeason, inProductionOrder)
     }
 
     Box(
@@ -85,7 +98,7 @@ fun EpisodeDetailsScreen(
             .fillMaxSize()
             .background(Color(0xFF05070C))
     ) {
-        if (chosenSeason == null) {
+        if (chosenSeason == null || chosenSeason!!.seasonNum != currentSeason) {
             Column(
                 modifier = Modifier.fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -146,10 +159,10 @@ fun EpisodeDetailsScreen(
                                 })
 
                             EpisodeSelector(
-                                chosenSeason?.numOfEpisodes ?: 1,
-                                chosenSeason?.episodeNames ?: emptyList(),
+                                episodeNameList,
                                 episodeNum,
-                                onEpisodeSelected = { newEpisodeNum -> episodeNum = newEpisodeNum
+                                onEpisodeSelected = { newEpisodeNum ->
+                                    episodeNum = newEpisodeNum
                                 })
                         }
                     }
@@ -161,7 +174,7 @@ fun EpisodeDetailsScreen(
                     text = chosenEpisode?.details?.name ?: "ERROR OBTAINING EPISODE",
                     textAlign = TextAlign.Center,
                     fontFamily = AntonioFontFamily,
-                    fontSize = 25.sp,
+                    fontSize = 30.sp,
                     fontWeight = FontWeight.Bold,
                     color = LcarsColours.Orange,
                     modifier = Modifier.padding(bottom = 10.dp)
@@ -270,6 +283,36 @@ fun EpisodeDetailsScreen(
                             uncheckedColor = LcarsColours.TextSecondary
                         )
                     )
+                }
+
+                if(chosenEpisode?.details?.stardate != null) {
+                    Spacer(modifier = Modifier.height(15.dp))
+
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Color(0xFF111111), shape = RoundedCornerShape(16.dp))
+                            .border(1.dp, Color(0xFF222222), RoundedCornerShape(16.dp))
+                            .padding(16.dp)
+                    ) {
+                        Text(
+                            text = "STARDATE //",
+                            fontFamily = AntonioFontFamily,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 14.sp,
+                            color = LcarsColours.Orange,
+                            letterSpacing = 1.5.sp,
+                            modifier = Modifier.padding(bottom = 6.dp)
+                        )
+                        Text(
+                            text = chosenEpisode?.details?.stardate.toString(),
+                            fontFamily = AntonioFontFamily,
+                            fontWeight = FontWeight.Light,
+                            fontSize = 20.sp,
+                            color = LcarsColours.TextSecondary,
+                            lineHeight = 20.sp
+                        )
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(15.dp))

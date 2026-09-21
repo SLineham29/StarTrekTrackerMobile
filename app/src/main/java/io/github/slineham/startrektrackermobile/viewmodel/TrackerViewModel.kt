@@ -1,9 +1,12 @@
 package io.github.slineham.startrektrackermobile.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.slineham.startrektrackermobile.BuildConfig
+import io.github.slineham.startrektrackermobile.api.EpisodeDetails
+import io.github.slineham.startrektrackermobile.api.STApi
 import io.github.slineham.startrektrackermobile.api.SeasonDetails
 import io.github.slineham.startrektrackermobile.api.SeriesIDs
 import io.github.slineham.startrektrackermobile.api.TmdbApi
@@ -22,6 +25,7 @@ import javax.inject.Inject
 class TrackerViewModel @Inject constructor(private val appRepository: AppRepository) : ViewModel() {
 
     private val api = TmdbApi().service
+    private val stApi = STApi().service
 
     var series = MutableStateFlow<List<Series>>(emptyList())
 
@@ -37,16 +41,11 @@ class TrackerViewModel @Inject constructor(private val appRepository: AppReposit
     private val _seriesWatchedEpisodes = MutableStateFlow<List<Episodes>>(emptyList())
     val seriesWatchedEpisodes: StateFlow<List<Episodes>> = _seriesWatchedEpisodes.asStateFlow()
 
+    private val _episodeNameList = MutableStateFlow<List<Pair<Int, String>>>(emptyList())
+    val episodeNameList: StateFlow<List<Pair<Int, String>>> = _episodeNameList.asStateFlow()
+
     init {
         getSeries()
-    }
-
-    private fun getSeasonEpisodeNames(season: SeasonDetails): List<String> {
-        val episodeNames: MutableList<String> = mutableListOf()
-        for(episode in season.episodes) {
-            episodeNames += episode.name
-        }
-        return episodeNames
     }
 
     private fun getSeries() {
@@ -57,22 +56,41 @@ class TrackerViewModel @Inject constructor(private val appRepository: AppReposit
                 val dbSeries = appRepository.getSeriesFromDb(id)
 
                 dbSeries ?:
-                    try {
-                        val details = api.getSeriesDetails(id, BuildConfig.TMDB_API_KEY)
+                try {
+                    val details = api.getSeriesDetails(id, BuildConfig.TMDB_API_KEY)
 
-                        val seriesImages = api.getSeriesImages(id, BuildConfig.TMDB_API_KEY)
+                    val seriesImages = api.getSeriesImages(id, BuildConfig.TMDB_API_KEY)
 
-                        val bestLogoPath = chooseBestLogo(seriesImages.logos)
+                    val bestLogoPath = chooseBestLogo(seriesImages.logos)
 
-                        val newDbSeries = Series(details.id, 0, bestLogoPath, details)
-                        appRepository.addSeriesToDb(newDbSeries)
-                        newDbSeries
-                    } catch (e: Exception) {
-                        println("TMDB_LOG: Failed ID $id -> ${e.localizedMessage}")
-                        null
-                    }
+                    val newDbSeries = Series(details.id, 0, bestLogoPath, details)
+                    appRepository.addSeriesToDb(newDbSeries)
+                    newDbSeries
+                } catch (e: Exception) {
+                    println("TMDB_LOG: Failed ID $id -> ${e.localizedMessage}")
+                    null
+                }
             }
             series.value = seriesList
+        }
+    }
+
+    private fun getSeasonEpisodeNames(season: SeasonDetails): List<String> {
+        val episodeNames: MutableList<String> = mutableListOf()
+        for(episode in season.episodes) {
+            episodeNames += episode.name
+        }
+        return episodeNames
+    }
+
+    fun getSeasonEpisodeNames(seriesId: Int, seasonNum: Int, inProdOrder: Boolean) {
+        viewModelScope.launch {
+            val episodes: List<Pair<Int, String>> = if(inProdOrder) {
+                appRepository.getProdOrderEpisodeNamesFromDb(seriesId, seasonNum)
+            } else {
+                appRepository.getEpisodeNamesFromDb(seriesId, seasonNum)
+            }
+            _episodeNameList.value = episodes
         }
     }
 
@@ -81,6 +99,24 @@ class TrackerViewModel @Inject constructor(private val appRepository: AppReposit
             val dbSeries = appRepository.getSeriesFromDb(seriesId)
             _chosenSeries.value = dbSeries
         }
+    }
+
+    suspend fun getExtraEpisodeDetails(episodeDetails: EpisodeDetails): EpisodeDetails {
+        val episodeExtrasResponse = stApi.getEpisodeDetails(
+            episodeDetails.name,
+            episodeDetails.airDate
+        )
+        Log.i("STApi", episodeExtrasResponse.toString())
+        if (episodeExtrasResponse.episodes.isEmpty()) {
+            return episodeDetails
+        }
+        val episodeExtras = episodeExtrasResponse.episodes[0]
+        print(episodeExtras)
+        if(episodeExtras.title == episodeDetails.name && episodeExtras.usAirDate == episodeDetails.airDate) {
+            episodeDetails.stardate = episodeExtras.stardate
+            episodeDetails.productionEpisodeNumber = episodeExtras.productionEpisodeNumber
+        }
+        return episodeDetails
     }
 
     fun getChosenSeriesSeason(seriesId: Int, seasonNum: Int){
@@ -93,9 +129,13 @@ class TrackerViewModel @Inject constructor(private val appRepository: AppReposit
             try {
                 val seriesSeason = api.getSeasonDetails(seriesId, seasonNum, BuildConfig.TMDB_API_KEY)
 
+                val updatedEpisodeDetails = seriesSeason.episodes.map { episode ->
+                    getExtraEpisodeDetails(episode)
+                }
+
                 dbSeason = Seasons(combinedId, seriesId, seasonNum, seriesSeason.episodes.count(), getSeasonEpisodeNames(seriesSeason), seriesSeason.overview)
                 appRepository.addSeasonToDb(dbSeason)
-                appRepository.addEpisodesToDb(seriesSeason.episodes, seriesId, seasonNum)
+                appRepository.addEpisodesToDb(updatedEpisodeDetails, seriesId, seasonNum)
             } catch (e: Exception) {
                 println(e.localizedMessage)
             }
@@ -108,6 +148,14 @@ class TrackerViewModel @Inject constructor(private val appRepository: AppReposit
             val combinedId = "${seriesId}_${seasonNum}_${episodeNum}"
 
             val dbEpisode = appRepository.getEpisodeFromDb(combinedId)
+
+            _chosenEpisodeDetails.value = dbEpisode
+        }
+    }
+
+    fun getChosenProductionOrderEpisode(seriesId: Int, seasonNum: Int, prodEpisodeNum: Int) {
+        viewModelScope.launch {
+            val dbEpisode = appRepository.getProdOrderEpisodeFromDb(seriesId, seasonNum, prodEpisodeNum)
 
             _chosenEpisodeDetails.value = dbEpisode
         }

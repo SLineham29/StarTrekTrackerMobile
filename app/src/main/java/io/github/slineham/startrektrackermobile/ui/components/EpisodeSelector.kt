@@ -1,10 +1,10 @@
 package io.github.slineham.startrektrackermobile.ui.components
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -28,10 +28,9 @@ import io.github.slineham.startrektrackermobile.ui.theme.LcarsColours
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EpisodeSelector(
-    numberOfEpisodes: Int,
-    episodeNames: List<String>,
+    episodeNameList: List<Pair<Int, String>>,
     chosenEpisode: Int,
-    onEpisodeSelected: (Int) -> Unit
+    onEpisodeSelected: (Int) -> Unit,
 ) {
 
     var showSheet by remember {mutableStateOf(false)}
@@ -59,11 +58,11 @@ fun EpisodeSelector(
                 onDismissRequest = {showSheet = false}
             ) {
                 LazyColumn() {
-                    items(numberOfEpisodes) { episode ->
+                    items(episodeNameList) { (episodeNum, episodeName) ->
                         ListItem(
-                            headlineContent = { Text("Episode ${episode + 1} - ${episodeNames[episode]}")},
+                            headlineContent = { Text("Episode $episodeNum - $episodeName")},
                             modifier = Modifier.clickable {
-                                onEpisodeSelected(episode + 1)
+                                onEpisodeSelected(episodeNum)
                                 showSheet = false
                             }
                         )

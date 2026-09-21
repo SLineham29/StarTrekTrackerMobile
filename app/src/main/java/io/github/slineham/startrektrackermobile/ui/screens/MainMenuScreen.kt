@@ -17,9 +17,13 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -58,11 +62,27 @@ fun MainMenuScreen(viewModel: TrackerViewModel = viewModel(), navController: Nav
                 verticalArrangement = Arrangement.Center
             ) {
                 CircularProgressIndicator()
-                Text(text = "Loading...")
+                Text(
+                    text = "Loading...",
+                    fontFamily = AntonioFontFamily,
+                    fontWeight = FontWeight.ExtraBold,
+                    fontSize = 40.sp,
+                    color = LcarsColours.Orange,
+                    letterSpacing = 1.sp,
+                    modifier = Modifier.padding(top = 5.dp))
             }
         } else {
 
             val pagerState = rememberPagerState(pageCount = {series.size})
+
+            IconButton(
+                modifier = Modifier
+                    .statusBarsPadding()
+                    .align(Alignment.TopEnd),
+                onClick = { navController.navigate("settings") }
+            ) {
+                Icon(Icons.Default.Settings, contentDescription = "Settings", tint = Color.White)
+            }
 
             Column(
                 modifier = Modifier

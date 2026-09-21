@@ -11,6 +11,15 @@ interface EpisodesDao {
     @Query("SELECT * FROM episodes WHERE combinedId = :id")
     suspend fun getEpisodeById(id: String): Episodes
 
+    @Query("SELECT * FROM episodes WHERE seriesId = :id AND seasonNum = :seasonNum AND productionEpisodeNumber = :prodEpNum")
+    suspend fun getProdOrderEpisode(id: Int, seasonNum: Int, prodEpNum: Int): Episodes
+
+    @Query("SELECT productionEpisodeNumber, name FROM episodes WHERE seriesId = :id AND seasonNum = :seasonNum ORDER BY productionEpisodeNumber ASC")
+    suspend fun getProdOrderEpisodeNames(id: Int, seasonNum: Int): List<Pair<Int, String>>
+
+    @Query("SELECT episodeNumber, name FROM episodes WHERE seriesId = :id AND seasonNum = :seasonNum ORDER BY episodeNumber ASC")
+    suspend fun getEpisodeNames(id: Int, seasonNum: Int): List<Pair<Int, String>>
+
     @Insert()
     suspend fun insertEpisode(episode: Episodes)
 

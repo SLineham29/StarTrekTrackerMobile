@@ -29,6 +29,21 @@ class AppRepository @Inject constructor(
         return episode
     }
 
+    suspend fun getProdOrderEpisodeFromDb(seriesId: Int, seasonNum: Int, prodEpisodeNum: Int): Episodes {
+        val episode = episodesDao.getProdOrderEpisode(seriesId, seasonNum, prodEpisodeNum)
+        return episode
+    }
+
+    suspend fun getProdOrderEpisodeNamesFromDb(seriesId: Int, seasonNum: Int): List<Pair<Int, String>> {
+        val episodes = episodesDao.getProdOrderEpisodeNames(seriesId, seasonNum)
+        return episodes
+    }
+
+    suspend fun getEpisodeNamesFromDb(seriesId: Int, seasonNum: Int): List<Pair<Int, String>> {
+        val episodes = episodesDao.getEpisodeNames(seriesId, seasonNum)
+        return episodes
+    }
+
     suspend fun addSeasonToDb(season: Seasons) {
         seasonsDao.insertSeason(season)
     }

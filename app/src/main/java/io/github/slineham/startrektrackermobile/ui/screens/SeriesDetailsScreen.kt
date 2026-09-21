@@ -22,18 +22,23 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -69,12 +74,20 @@ fun SeriesDetailsScreen(
 
     var seasonNum by remember { mutableIntStateOf(chosenSeason?.seasonNum ?: 1) }
 
-    LaunchedEffect(seasonNum) {
-        viewModel.getChosenSeriesSeason(seriesId, seasonNum)
-    }
+    var inProductionOrder by remember { mutableStateOf(false) }
+
+    val seasonLoaded = chosenSeries != null &&
+            chosenSeason != null &&
+            chosenSeason?.seasonNum == seasonNum &&
+            chosenSeason?.seriesId == seriesId
 
     LaunchedEffect(seriesId) {
+        seasonNum = 1
+    }
+
+    LaunchedEffect(seriesId, seasonNum) {
         viewModel.getChosenSeries(seriesId)
+        viewModel.getChosenSeriesSeason(seriesId, seasonNum)
     }
 
     Box(modifier = Modifier
@@ -262,6 +275,45 @@ fun SeriesDetailsScreen(
                     }
 
                     Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Switch(
+                            modifier = Modifier.padding(10.dp, 10.dp,10.dp,0.dp),
+                            checked = inProductionOrder,
+                            onCheckedChange = {
+                                inProductionOrder = it
+                            },
+                            thumbContent = if(inProductionOrder) {
+                                {
+                                    Icon(
+                                        imageVector = Icons.Filled.Check,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(SwitchDefaults.IconSize),
+                                    )
+                                }
+                            } else {
+                                null
+                            },
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = Color.White,
+                                checkedTrackColor = LcarsColours.Orange,
+                                uncheckedThumbColor = Color.Black,
+                                uncheckedTrackColor = Color.White,
+                            )
+                        )
+
+                        Text(
+                            text = "Show episodes in production order?",
+                            fontFamily = AntonioFontFamily,
+                            fontWeight = FontWeight.Bold,
+                            color = LcarsColours.TextPrimary,
+                            fontSize = 15.sp
+                        )
+                    }
+
+                    Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp),
@@ -273,16 +325,26 @@ fun SeriesDetailsScreen(
                             seasonNum,
                             onSeasonSelected = {newSeasonNum -> seasonNum = newSeasonNum})
                         Button(
-                            onClick = { navController.navigate("seriesDetails/${seriesId}/$seasonNum/1") },
+                            onClick = {
+                                navController.currentBackStackEntry?.savedStateHandle
+                                    ?.set("inProductionOrder", inProductionOrder)
+                                navController.navigate("seriesDetails/${seriesId}/$seasonNum/1") },
                             colors = ButtonDefaults.buttonColors(containerColor = LcarsColours.Orange),
-                            shape = RoundedCornerShape(8.dp)
+                            shape = RoundedCornerShape(8.dp),
+                            enabled = seasonLoaded
                         ) {
-                            Text(
-                                text = "VIEW SEASON DETAILS",
-                                fontFamily = AntonioFontFamily,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.Black,
-                                fontSize = 15.sp)
+                            if(seasonLoaded) {
+                                Text(
+                                    text = "VIEW SEASON DETAILS",
+                                    fontFamily = AntonioFontFamily,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.Black,
+                                    fontSize = 15.sp
+                                )
+                            }
+                            else {
+                                CircularProgressIndicator(color = LcarsColours.Orange)
+                            }
                         }
                     }
 
@@ -309,7 +371,11 @@ fun SeriesDetailsScreen(
                                 color = LcarsColours.TextSecondary,
                                 lineHeight = 20.sp
                             )
-                        } else {
+                        }
+                        else if(chosenSeason?.seriesId != seriesId || chosenSeason?.seasonNum != seasonNum) {
+                            CircularProgressIndicator(color = LcarsColours.Orange)
+                        }
+                        else {
                             Text(
                                 text = chosenSeason?.overview ?: "NO OVERVIEW AVAILABLE.",
                                 fontFamily = AntonioFontFamily,

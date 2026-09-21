@@ -11,6 +11,7 @@ import io.github.slineham.startrektrackermobile.ui.screens.EpisodeDetailsScreen
 import io.github.slineham.startrektrackermobile.ui.screens.EpisodesWatchedScreen
 import io.github.slineham.startrektrackermobile.ui.screens.MainMenuScreen
 import io.github.slineham.startrektrackermobile.ui.screens.SeriesDetailsScreen
+import io.github.slineham.startrektrackermobile.ui.screens.SettingsScreen
 import io.github.slineham.startrektrackermobile.viewmodel.TrackerViewModel
 
 @Composable
@@ -26,6 +27,12 @@ fun Navigator() {
     ) {
         composable(route = "mainMenu") {
             MainMenuScreen(
+                viewModel = viewModel,
+                navController = navController
+            )
+        }
+        composable(route = "settings") {
+            SettingsScreen(
                 viewModel = viewModel,
                 navController = navController
             )
@@ -70,6 +77,7 @@ fun Navigator() {
             val episodeNumber = backStackEntry.arguments?.getInt("episodeNum") ?: 1
 
             EpisodeDetailsScreen(
+                navController = navController,
                 viewModel = viewModel,
                 seasonNum = seasonNumber,
                 seriesId = id,
